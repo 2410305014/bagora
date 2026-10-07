@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bagora Luxury Atelier — API Portal & Live Explorer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0d0f12;
+      --surface: #16191f;
+      --surface-elevated: #1e222b;
+      --border: #2c323f;
+      --gold: #d4af37;
+      --gold-light: #f3e5ab;
+      --text: #f0f2f5;
+      --text-muted: #9ba1ad;
+      --accent: #c28e5c;
+      --green: #2ecc71;
+      --red: #e74c3c;
+      --font-display: 'Playfair Display', serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1.25rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .brand h1 {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      letter-spacing: 0.05em;
+      color: var(--gold-light);
+    }
+
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
+      background: rgba(46, 204, 113, 0.12);
+      color: var(--green);
+      border: 1px solid rgba(46, 204, 113, 0.3);
+      font-weight: 600;
+    }
+
+    .pulse {
+      width: 7px;
+      height: 7px;
+      background: var(--green);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--green);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.3); opacity: 1; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+
+    .container {
+      max-width: 1380px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2rem;
+      display: grid;
+      grid-template-columns: 460px 1fr;
+      gap: 2rem;
+      flex: 1;
+    }
+
+    @media (max-width: 1024px) {
+      .container { grid-template-columns: 1fr; }
+    }
+
+    .hero-card {
+      background: linear-gradient(135deg, #1c212a 0%, #15181f 100%);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero-card h2 {
+      font-family: var(--font-display);
+      color: var(--gold-light);
+      font-size: 1.35rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .hero-card p {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+    }
+
+    .endpoints-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .endpoint-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .endpoint-item:hover, .endpoint-item.active {
+      border-color: var(--gold);
+      background: var(--surface-elevated);
+      transform: translateY(-1px);
+    }
+
+    .ep-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .method {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      letter-spacing: 0.05em;
+    }
+
+    .method.get { background: rgba(52, 152, 219, 0.2); color: #5dade2; border: 1px solid rgba(52, 152, 219, 0.4); }
+    .method.post { background: rgba(46, 204, 113, 0.2); color: #58d68d; border: 1px solid rgba(46, 204, 113, 0.4); }
+    .method.patch { background: rgba(243, 156, 18, 0.2); color: #f5b041; border: 1px solid rgba(243, 156, 18, 0.4); }
+
+    .path {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .ep-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .panel-right {
+      display: flex;
+      flex-direction: column;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--surface-elevated);
+    }
+
+    .panel-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--gold-light);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-run {
+      background: linear-gradient(135deg, var(--gold) 0%, var(--accent) 100%);
+      color: #0b0d10;
+      border: none;
+      padding: 0.55rem 1.4rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s;
+    }
+
+    .btn-run:hover {
+      opacity: 0.92;
+      transform: scale(1.02);
+    }
+
+    .params-section {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .params-section label {
+      display: block;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .payload-editor {
+      width: 100%;
+      height: 100px;
+      background: #0b0d11;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem;
+      color: #7ee787;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      resize: vertical;
+      outline: none;
+    }
+
+    .response-section {
+      flex: 1;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .response-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .status-pill {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      background: #232731;
+    }
+
+    .status-pill.success { color: var(--green); border: 1px solid rgba(46,204,113,0.3); }
+    .status-pill.error { color: var(--red); border: 1px solid rgba(231,76,60,0.3); }
+
+    .code-output {
+      flex: 1;
+      min-height: 380px;
+      background: #0b0d11;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: #e6edf3;
+      overflow: auto;
+      white-space: pre-wrap;
+      line-height: 1.5;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 1rem 2rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      background: var(--surface);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <h1>BAGORA ATELIER</h1>
+      <span style="color: var(--text-muted); font-size: 0.85rem;">/ Luxury E-Commerce Backend</span>
+    </div>
+    <div class="badge-status">
+      <span class="pulse"></span>
+      <span>API Online &bull; Node.js v24</span>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Left Column: Catalog of Endpoints -->
+    <div class="panel-left">
+      <div class="hero-card">
+        <h2>RESTful API Explorer</h2>
+        <p>Explore and execute live requests against the Bagora Luxury Backend. Seeded with Italian full-grain handbags, totes, promos, and orders.</p>
+      </div>
+
+      <div class="endpoints-list" id="endpointsList">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+
+    <!-- Right Column: Live Request / Response Console -->
+    <div class="panel-right">
+      <div class="panel-header">
+        <div class="panel-title" id="activeEpTitle">
+          <span class="method get" id="activeMethod">GET</span>
+          <span class="path" id="activePath">/api/products</span>
+        </div>
+        <button class="btn-run" id="btnExecute">
+          <span>&blacktriangleright;</span> Send Request
+        </button>
+      </div>
+
+      <div class="params-section" id="payloadContainer" style="display: none;">
+        <label>JSON Request Body</label>
+        <textarea class="payload-editor" id="payloadInput"></textarea>
+      </div>
+
+      <div class="response-section">
+        <div class="response-meta">
+          <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em;">Live Server Response</span>
+          <span class="status-pill success" id="statusPill">Status: 200 OK</span>
+        </div>
+        <pre class="code-output" id="responseCode">// Select an endpoint and click "Send Request" to test...</pre>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Bagora Luxury Goods Atelier &bull; Built with Node.js & Express &bull; <a href="http://localhost:5173" style="color: var(--gold); text-decoration: none;">Launch Client Store &rarr;</a>
+  </footer>
+
+  <script>
+    const ENDPOINTS = [
+      {
+        name: "Check Atelier Health",
+        method: "GET",
+        path: "/api/health",
+        desc: "Server heartbeat, uptime, and system status",
+        hasPayload: false
+      },
+      {
+        name: "List All Products",
+        method: "GET",
+        path: "/api/products",
+        desc: "Fetch full luxury catalog with ratings, inventory & badges",
+        hasPayload: false
+      },
+      {
+        name: "Filter by Category (Totes)",
+        method: "GET",
+        path: "/api/products?category=Totes",
+        desc: "Filter handbags by category silhouette",
+        hasPayload: false
+      },
+      {
+        name: "Search Bags ('Leather')",
+        method: "GET",
+        path: "/api/products?search=Leather",
+        desc: "Full-text search on names, materials, and descriptions",
+        hasPayload: false
+      },
+      {
+        name: "Get Single Bag Detail",
+        method: "GET",
+        path: "/api/products/luxe-leather-carryall",
+        desc: "Product specs, gallery images, reviews, and related bags",
+        hasPayload: false
+      },
+      {
+        name: "Validate Promo Code (LUXE10)",
+        method: "POST",
+        path: "/api/promos/validate",
+        desc: "Check discount code eligibility & compute savings",
+        hasPayload: true,
+        defaultPayload: JSON.stringify({ code: "LUXE10", subtotal: 350 }, null, 2)
+      },
+      {
+        name: "Place Luxury Purchase Order",
+        method: "POST",
+        path: "/api/orders",
+        desc: "Checkout items, generate tracking ID, and update stock",
+        hasPayload: true,
+        defaultPayload: JSON.stringify({
+          customer: {
+            name: "Sophia Kensington",
+            email: "sophia@atelier.com",
+            address: "740 Park Avenue",
+            city: "New York",
+            country: "USA"
+          },
+          promoCode: "LUXE10",
+          items: [
+            { id: "luxe-leather-carryall", quantity: 1, color: "Tan", price: 189 }
+          ]
+        }, null, 2)
+      },
+      {
+        name: "List All Orders",
+        method: "GET",
+        path: "/api/orders",
+        desc: "Recent client orders & tracking history",
+        hasPayload: false
+      },
+      {
+        name: "Submit Product Review",
+        method: "POST",
+        path: "/api/products/luxe-leather-carryall/reviews",
+        desc: "Add client review and update average rating",
+        hasPayload: true,
+        defaultPayload: JSON.stringify({
+          author: "Isabella Rossi",
+          rating: 5,
+          comment: "Breathtaking leather quality. Truly whisper-quiet luxury."
+        }, null, 2)
+      },
+      {
+        name: "VIP Newsletter Subscription",
+        method: "POST",
+        path: "/api/newsletter/subscribe",
+        desc: "Register email for luxury seasonal invitations",
+        hasPayload: true,
+        defaultPayload: JSON.stringify({ email: "collector@paris-fashion.fr" }, null, 2)
+      },
+      {
+        name: "Atelier Analytics & Revenue",
+        method: "GET",
+        path: "/api/admin/stats",
+        desc: "Total revenue, order count, bestsellers & average order value",
+        hasPayload: false
+      }
+    ];
+
+    let activeIndex = 1; // Default to "List All Products"
+
+    const listEl = document.getElementById('endpointsList');
+    const activeMethodEl = document.getElementById('activeMethod');
+    const activePathEl = document.getElementById('activePath');
+    const payloadContainer = document.getElementById('payloadContainer');
+    const payloadInput = document.getElementById('payloadInput');
+    const responseCode = document.getElementById('responseCode');
+    const statusPill = document.getElementById('statusPill');
+    const btnExecute = document.getElementById('btnExecute');
+
+    function renderEndpoints() {
+      listEl.innerHTML = '';
+      ENDPOINTS.forEach((ep, idx) => {
+        const item = document.createElement('div');
+        item.className = `endpoint-item ${idx === activeIndex ? 'active' : ''}`;
+        item.innerHTML = `
+          <div class="ep-header">
+            <span class="method ${ep.method.toLowerCase()}">${ep.method}</span>
+            <span class="path">${ep.path}</span>
+          </div>
+          <div class="ep-desc">${ep.name} &bull; ${ep.desc}</div>
+        `;
+        item.onclick = () => selectEndpoint(idx);
+        listEl.appendChild(item);
+      });
+    }
+
+    function selectEndpoint(idx) {
+      activeIndex = idx;
+      const ep = ENDPOINTS[idx];
+      activeMethodEl.textContent = ep.method;
+      activeMethodEl.className = `method ${ep.method.toLowerCase()}`;
+      activePathEl.textContent = ep.path;
+
+      if (ep.hasPayload) {
+        payloadContainer.style.display = 'block';
+        payloadInput.value = ep.defaultPayload || '{}';
+      } else {
+        payloadContainer.style.display = 'none';
+      }
+
+      renderEndpoints();
+      runRequest();
+    }
+
+    async function runRequest() {
+      const ep = ENDPOINTS[activeIndex];
+      responseCode.textContent = '// Dispatching request to Atelier server...';
+      statusPill.textContent = 'Loading...';
+      statusPill.className = 'status-pill';
+
+      try {
+        const options = {
+          method: ep.method,
+          headers: { 'Content-Type': 'application/json' }
+        };
+
+        if (ep.hasPayload) {
+          options.body = payloadInput.value;
+        }
+
+        const start = performance.now();
+        const res = await fetch(ep.path, options);
+        const elapsed = Math.round(performance.now() - start);
+        const data = await res.json();
+
+        statusPill.textContent = `${res.status} ${res.statusText} (${elapsed}ms)`;
+        statusPill.className = `status-pill ${res.ok ? 'success' : 'error'}`;
+        responseCode.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        statusPill.textContent = 'Network Error';
+        statusPill.className = 'status-pill error';
+        responseCode.textContent = JSON.stringify({ error: err.message }, null, 2);
+      }
+    }
+
+    btnExecute.onclick = runRequest;
+
+    // Initial load
+    renderEndpoints();
+    selectEndpoint(1);
+  </script>
+</body>
+</html>
